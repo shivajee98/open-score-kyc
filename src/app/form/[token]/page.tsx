@@ -7,13 +7,14 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-    params: { token: string };
+    params: Promise<{ token: string }>;
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
+    const { token } = await params;
     return (
         <main className="min-h-screen bg-white">
-            <KycForm token={params.token} />
+            <KycForm token={token} />
         </main>
     );
 }
