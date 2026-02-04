@@ -22,7 +22,7 @@ const STEPS = [
 export default function KycForm({ token }: KycFormProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const [loanData, setLoanData] = useState<any>(null);
-    const [capturedData, setCapturedData] = useState<Record<string, { url: string; geo: any }>>({});
+    const [capturedData, setCapturedData] = useState<Record<string, { url: string }>>({});
     const [status, setStatus] = useState<'loading' | 'active' | 'success' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
 
@@ -31,7 +31,8 @@ export default function KycForm({ token }: KycFormProps) {
         bank_name: '',
         ifsc_code: '',
         account_holder_name: '',
-        account_number: ''
+        account_number: '',
+        location_url: '' // Google Maps location URL
     });
     const [isBankDetailsSubmitted, setIsBankDetailsSubmitted] = useState(false);
 
@@ -70,13 +71,13 @@ export default function KycForm({ token }: KycFormProps) {
         return data.secure_url;
     };
 
-    const handleCapture = async (blob: Blob, geo: any) => {
+    const handleCapture = async (blob: Blob) => {
         try {
             const url = await uploadToCloudinary(blob);
             const stepId = STEPS[currentStep].id;
             setCapturedData(prev => ({
                 ...prev,
-                [stepId]: { url, geo }
+                [stepId]: { url }
             }));
 
             if (currentStep < STEPS.length - 1) {
@@ -84,7 +85,7 @@ export default function KycForm({ token }: KycFormProps) {
             } else {
                 submitFinalData({
                     ...capturedData,
-                    [stepId]: { url, geo }
+                    [stepId]: { url }
                 });
             }
         } catch (err) {
@@ -100,7 +101,7 @@ export default function KycForm({ token }: KycFormProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...finalData,
-                    ...bankDetails // Include bank details
+                    ...bankDetails // Include bank details with location URL
                 })
             });
             if (res.ok) {
@@ -208,6 +209,18 @@ export default function KycForm({ token }: KycFormProps) {
                                 className="w-full p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800"
                                 placeholder="xxxxxxxxxx"
                             />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Google Maps Location URL</label>
+                            <input
+                                name="location_url"
+                                value={bankDetails.location_url}
+                                onChange={handleBankChange}
+                                type="url"
+                                className="w-full p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800"
+                                placeholder="https://maps.google.com/..."
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">Paste your location link from Google Maps</p>
                         </div>
 
                         <button type="submit" className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">

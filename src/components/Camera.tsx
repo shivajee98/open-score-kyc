@@ -5,7 +5,7 @@ import { Camera as CameraIcon, RotateCw, Check, X, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CameraProps {
-    onCapture: (blob: Blob, location: { lat: number; lng: number } | null) => void;
+    onCapture: (blob: Blob) => void;
     label: string;
 }
 
@@ -13,7 +13,6 @@ export default function Camera({ onCapture, label }: CameraProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
-    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,12 +26,6 @@ export default function Camera({ onCapture, label }: CameraProps) {
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
             }
-
-            // Get location simultaneously
-            navigator.geolocation.getCurrentPosition(
-                (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                () => console.warn("Location access denied")
-            );
         } catch (err) {
             setError("Camera access denied. Please enable permissions.");
         }
@@ -64,7 +57,7 @@ export default function Camera({ onCapture, label }: CameraProps) {
         setLoading(true);
         const response = await fetch(capturedImage);
         const blob = await response.blob();
-        onCapture(blob, location);
+        onCapture(blob);
         setLoading(false);
     };
 
@@ -97,13 +90,6 @@ export default function Camera({ onCapture, label }: CameraProps) {
                     </>
                 ) : (
                     <img src={capturedImage} className="w-full h-full object-cover" alt="Captured" />
-                )}
-
-                {location && (
-                    <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 text-[10px] text-white">
-                        <MapPin size={10} className="text-emerald-400" />
-                        <span>{location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
-                    </div>
                 )}
             </div>
 
