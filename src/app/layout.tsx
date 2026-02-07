@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+// Trigger redeploy to bake in new API URL: https://api.msmeloan.sbs/api
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
