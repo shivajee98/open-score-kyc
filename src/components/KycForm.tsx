@@ -13,6 +13,7 @@ const STEPS = [
     { id: 'aadhar_front', label: 'Aadhaar Card (Front)', icon: FileText },
     { id: 'aadhar_back', label: 'Aadhaar Card (Back)', icon: FileText },
     { id: 'pan_front', label: 'PAN Card (Front)', icon: FileText },
+    { id: 'applicant_selfie', label: "Applicant's Selfie", icon: User },
     { id: 'selfie', label: 'Selfie with Loan Agent', icon: User },
     { id: 'prop_1', label: 'Property View (Side 1)', icon: Home },
     { id: 'prop_2', label: 'Property View (Side 2)', icon: Home },
@@ -57,27 +58,47 @@ export default function KycForm({ token }: KycFormProps) {
         }
     };
 
-    const uploadToCloudinary = async (blob: Blob) => {
+    const uploadToServer = async (blob: Blob) => {
         const formData = new FormData();
-        formData.append('file', blob);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-        formData.append('cloud_name', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!);
+        formData.append('file', blob, 'kyc_image.jpg');
 
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kyc/upload/${token}`, {
             method: 'POST',
             body: formData
         });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Upload failed");
+        }
+
         const data = await res.json();
-        return data.secure_url;
+        return data.url;
     };
 
     const handleCapture = async (blob: Blob) => {
         try {
-            const url = await uploadToCloudinary(blob);
+            // Get geolocation
+            let geo = null;
+            try {
+                const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                });
+                geo = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+            } catch (e) {
+                console.warn("Geolocation failed", e);
+            }
+
+            const url = await uploadToServer(blob);
             const stepId = STEPS[currentStep].id;
+            const stepData = { url, geo };
+
             setCapturedData(prev => ({
                 ...prev,
-                [stepId]: { url }
+                [stepId]: stepData
             }));
 
             if (currentStep < STEPS.length - 1) {
@@ -85,7 +106,7 @@ export default function KycForm({ token }: KycFormProps) {
             } else {
                 submitFinalData({
                     ...capturedData,
-                    [stepId]: { url }
+                    [stepId]: stepData
                 });
             }
         } catch (err) {
