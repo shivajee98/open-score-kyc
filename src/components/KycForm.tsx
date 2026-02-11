@@ -177,6 +177,12 @@ export default function KycForm({ token }: KycFormProps) {
         return (
             <div className="max-w-md mx-auto min-h-screen bg-slate-50 pb-20">
                 <header className="bg-slate-900 p-8 rounded-b-[3rem] shadow-2xl mb-8">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-lg overflow-hidden">
+                            <img src="/logo.svg" alt="OpenScore" className="w-full h-full" />
+                        </div>
+                        <span className="text-white/60 text-xs font-black uppercase tracking-widest">OpenScore KYC</span>
+                    </div>
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
                             <CreditCard size={20} />
@@ -264,6 +270,12 @@ export default function KycForm({ token }: KycFormProps) {
     return (
         <div className="max-w-md mx-auto min-h-screen bg-slate-50 pb-20">
             <header className="bg-slate-900 p-8 rounded-b-[3rem] shadow-2xl mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden">
+                        <img src="/logo.svg" alt="OpenScore" className="w-full h-full" />
+                    </div>
+                    <span className="text-white/60 text-xs font-black uppercase tracking-widest">OpenScore KYC</span>
+                </div>
                 <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
                         <StepIcon size={20} />
